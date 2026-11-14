@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "dev.illagerarmada.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "PirateShipAccessMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "client": [
+    "PirateShipRendererLodMixin"
+  ]
+}

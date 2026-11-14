@@ -1,0 +1,59 @@
+name: Build Illager Armada
+
+on:
+  push:
+    branches: [main, 'release/**', v1.0.0-release-prep, v1.0.1-gunnery-hotfix]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Validate source, cargo and public defaults
+        run: python3 scripts/validate_release.py
+      - name: Compile and remap Fabric mod
+        run: gradle --no-daemon clean build --stacktrace
+      - name: Verify compiled JAR
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(sed -n 's/^mod_version=//p' gradle.properties)"
+          jar="build/libs/illager-armada-${version}.jar"
+          sources="build/libs/illager-armada-${version}-sources.jar"
+          test -s "$jar"
+          test -s "$sources"
+          unzip -t "$jar"
+          unzip -p "$jar" fabric.mod.json | grep -Fq "\"version\": \"${version}\""
+          unzip -Z1 "$jar" | grep -q 'illager_armada.mixins.json'
+          unzip -Z1 "$jar" | grep -q 'data/illager_armada/pirate_cargo/galleon.json'
+          if unzip -Z1 "$jar" | grep -E '(^pota/|^config/smallships-server.toml$)'; then
+            echo "Unexpected modpack-specific configuration in release"
+            exit 1
+          fi
+      - name: Upload versioned build
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: illager-armada-${{ github.sha }}
+          path: |
+            build/libs/*.jar
+            README.md
+            CHANGELOG.md
+            docs/**/*.md
+            release/*.md
+          if-no-files-found: error
