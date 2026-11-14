@@ -25,4 +25,4 @@ Replace the previous Illager Armada JAR with **1.0.1.1** on both client and serv
 
 **Source:** https://github.com/10bibbys-cmyk/Illager-Armada-Source
 
-**Verification:** The maintenance alpha passed Java 17 source validation and CI compilation. The stable artifact must pass equivalent CI and resource comparison before publication. The naval gameplay implementation is identical to the 1.0.1 release previously tested in-game.
+**Verification:** Stable 1.0.1.1 passed Java 17 CI and source validation. Its 35 compiled classes and all packaged resources match the tested 1.0.1 release byte-for-byte; only Fabric version metadata changed. No separate 1.0.1.1 in-game test is claimed.
